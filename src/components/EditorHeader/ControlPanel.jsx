@@ -1098,6 +1098,34 @@ export default function ControlPanel({
                 }));
               },
             },
+            {
+              name: "EF Core (C#)",
+              function: async () => {
+                const schema = {
+                  tables: tables,
+                  relationships: relationships,
+                  types: types,
+                  database: database,
+                };
+                try {
+                  const response = await fetch("http://localhost:5031/api/generator/efcore", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(schema),
+                  });
+                  if (response.ok) {
+                    Toast.success("EF Core code generated successfully!");
+                  } else {
+                    Toast.error("Failed to generate code.");
+                  }
+                } catch (error) {
+                  console.error(error);
+                  Toast.error("Error connecting to backend.");
+                }
+              },
+            },
           ],
         }),
         function: () => {
@@ -1265,6 +1293,55 @@ export default function ControlPanel({
                 ...prev,
                 data: result,
                 extension: "md",
+              }));
+            },
+          },
+          {
+            name: "EF Core (C#)",
+            function: async () => {
+              const schema = {
+                tables: tables,
+                relationships: relationships,
+                types: types,
+                database: database,
+              };
+              try {
+                const response = await fetch("http://localhost:5031/api/generator/efcore", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(schema),
+                });
+                if (response.ok) {
+                  const result = await response.json();
+                  Toast.success(result.message || "EF Core code generated successfully!");
+                } else {
+                  const err = await response.json();
+                  Toast.error(err.message || "Failed to generate code.");
+                }
+              } catch (error) {
+                console.error(error);
+                Toast.error("Error connecting to backend.");
+              }
+            },
+          },
+          {
+            name: "SQL",
+            function: () => {
+              if (database === DB.GENERIC) return;
+              setModal(MODAL.CODE);
+              const src = exportSQL({
+                tables: tables,
+                references: relationships,
+                types: types,
+                database: database,
+                enums: enums,
+              });
+              setExportData((prev) => ({
+                ...prev,
+                data: src,
+                extension: "sql",
               }));
             },
           },
