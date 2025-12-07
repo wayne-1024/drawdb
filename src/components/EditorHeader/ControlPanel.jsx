@@ -1798,6 +1798,25 @@ export default function ControlPanel({
               <IconSaveStroked size="extra-large" />
             </button>
           </Tooltip>
+          <Dropdown
+            trigger="click"
+            position="bottom"
+            render={
+              <Dropdown.Menu>
+                {menu.file.export_as.children.map((e, i) => (
+                  <Dropdown.Item key={i} onClick={e.function}>
+                    {e.name}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            }
+          >
+            <div className="py-1 px-2 hover-2 rounded-sm flex items-center cursor-pointer">
+              <Tooltip content={t("export_as")} position="bottom">
+                <i className="fa-solid fa-file-export text-xl" />
+              </Tooltip>
+            </div>
+          </Dropdown>
           <Tooltip content={t("versions")} position="bottom">
             <button
               className="py-1 px-2 hover-2 rounded-sm text-xl -mt-0.5"
@@ -1869,14 +1888,14 @@ export default function ControlPanel({
         style={isRtl(i18n.language) ? { direction: "rtl" } : {}}
       >
         <div className="flex justify-start items-center">
-          <Link to="/">
+          <div>
             <img
               width={54}
               src={icon}
               alt="logo"
               className="ms-7 min-w-[54px]"
             />
-          </Link>
+          </div>
           <div className="ms-1 mt-1">
             <div className="flex items-center ms-3 gap-2">
               {databases[database].image && (
