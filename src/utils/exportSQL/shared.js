@@ -33,7 +33,7 @@ export function exportFieldComment(comment) {
 export function getInlineFK(table, obj) {
   let fks = [];
   obj.references.forEach((r) => {
-    if (r.startTableId === table.id) {
+    if (r.startTableId === table.id && !r.virtual) {
       fks.push(
         `\tFOREIGN KEY ("${table.fields.find((f) => f.id === r.startFieldId)?.name}") REFERENCES "${
           obj.tables.find((t) => t.id === r.endTableId)?.name

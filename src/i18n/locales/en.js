@@ -9,6 +9,7 @@ const en = {
     report_bug: "Report a bug",
     import: "Import",
     inherits: "Inherits",
+    virtual_relation: "Virtual Relation",
     merging_column_w_inherited_definition:
       "Column '{{fieldName}}' in table '{{tableName}}' with inherited definition will be merged",
     import_from: "Import from",

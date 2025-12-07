@@ -6,6 +6,7 @@ import {
   Popover,
   Table,
   Input,
+  Switch,
 } from "@douyinfe/semi-ui";
 import {
   IconDeleteStroked,
@@ -141,37 +142,71 @@ export default function RelationshipInfo({ data }) {
     updateRelationship(data.id, { [undoKey]: value });
   };
 
+  const changeVirtual = (value) => {
+    if (layout.readOnly) return;
+
+    setUndoStack((prev) => [
+      ...prev,
+      {
+        action: Action.EDIT,
+        element: ObjectType.RELATIONSHIP,
+        rid: data.id,
+        undo: { virtual: data.virtual },
+        redo: { virtual: value },
+        message: t("edit_relationship", {
+          refName: data.name,
+          extra: "[virtual]",
+        }),
+      },
+    ]);
+    setRedoStack([]);
+    updateRelationship(data.id, { virtual: value });
+  };
+
   return (
     <>
+      <div className="flex items-center mb-2.5 justify-between">
+        <div className="flex items-center flex-1">
+          <div className="text-md font-semibold break-keep">{t("name")}: </div>
+          <Input
+            value={data.name}
+            validateStatus={data.name.trim() === "" ? "error" : "default"}
+            placeholder={t("name")}
+            className="ms-2"
+            readonly={layout.readOnly}
+            onChange={(value) => updateRelationship(data.id, { name: value })}
+            onFocus={(e) => setEditField({ name: e.target.value })}
+            onBlur={(e) => {
+              if (e.target.value === editField.name) return;
+              setUndoStack((prev) => [
+                ...prev,
+                {
+                  action: Action.EDIT,
+                  element: ObjectType.RELATIONSHIP,
+                  component: "self",
+                  rid: data.id,
+                  undo: editField,
+                  redo: { name: e.target.value },
+                  message: t("edit_relationship", {
+                    refName: e.target.value,
+                    extra: "[name]",
+                  }),
+                },
+              ]);
+              setRedoStack([]);
+            }}
+          />
+        </div>
+      </div>
       <div className="flex items-center mb-2.5">
-        <div className="text-md font-semibold break-keep">{t("name")}: </div>
-        <Input
-          value={data.name}
-          validateStatus={data.name.trim() === "" ? "error" : "default"}
-          placeholder={t("name")}
+        <div className="text-md font-semibold break-keep">
+          {t("virtual_relation")}:{" "}
+        </div>
+        <Switch
+          checked={data.virtual}
+          onChange={changeVirtual}
           className="ms-2"
-          readonly={layout.readOnly}
-          onChange={(value) => updateRelationship(data.id, { name: value })}
-          onFocus={(e) => setEditField({ name: e.target.value })}
-          onBlur={(e) => {
-            if (e.target.value === editField.name) return;
-            setUndoStack((prev) => [
-              ...prev,
-              {
-                action: Action.EDIT,
-                element: ObjectType.RELATIONSHIP,
-                component: "self",
-                rid: data.id,
-                undo: editField,
-                redo: { name: e.target.value },
-                message: t("edit_relationship", {
-                  refName: e.target.value,
-                  extra: "[name]",
-                }),
-              },
-            ]);
-            setRedoStack([]);
-          }}
+          disabled={layout.readOnly}
         />
       </div>
       <div className="flex justify-between items-center mb-3">

@@ -7,6 +7,7 @@ const chinese = {
 const zh = {
   translation: {
     report_bug: "报告问题",
+    virtual_relation: "虚拟关系",
     import_from: "导入",
     import: "导入",
     file: "文件",

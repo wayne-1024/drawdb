@@ -228,6 +228,7 @@ export function jsonToMySQL(obj) {
           .join("\n")}`}`,
     )
     .join("\n")}\n${obj.references
+    .filter((r) => !r.virtual)
     .map((r) => {
       const { name: startName, fields: startFields } = obj.tables.find(
         (t) => t.id === r.startTableId,
@@ -335,6 +336,7 @@ export function jsonToPostgreSQL(obj) {
           .join("\n")}`,
     )
     .join("\n")}\n${obj.references
+    .filter((r) => !r.virtual)
     .map((r) => {
       const { name: startName, fields: startFields } = obj.tables.find(
         (t) => t.id === r.startTableId,
@@ -473,6 +475,7 @@ export function jsonToMariaDB(obj) {
           .join("\n")}`}`,
     )
     .join("\n")}\n${obj.references
+    .filter((r) => !r.virtual)
     .map((r) => {
       const { name: startName, fields: startFields } = obj.tables.find(
         (t) => t.id === r.startTableId,
@@ -545,6 +548,7 @@ export function jsonToSQLServer(obj) {
           .join("")}`,
     )
     .join("\n")}\n${obj.references
+    .filter((r) => !r.virtual)
     .map((r) => {
       const { name: startName, fields: startFields } = obj.tables.find(
         (t) => t.id === r.startTableId,
@@ -618,6 +622,7 @@ export function jsonToOracleSQL(obj) {
           .join("\n")}`,
     )
     .join("\n\n")}\n${obj.references
+    .filter((r) => !r.virtual)
     .map((r) => {
       const { name: startName, fields: startFields } = obj.tables.find(
         (t) => t.id === r.startTableId,

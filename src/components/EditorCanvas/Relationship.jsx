@@ -130,6 +130,7 @@ export default function Relationship({ data }) {
           className="relationship-path"
           fill="none"
           cursor="pointer"
+          strokeDasharray={data.virtual ? "10,10" : "0"}
         />
         {settings.showRelationshipLabels && (
           <text
