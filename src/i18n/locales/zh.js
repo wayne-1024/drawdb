@@ -93,6 +93,8 @@ const zh = {
     add_note: "添加注释",
     add_type: "添加类型",
     to_do: "待办事项",
+    show_more: "显示更多 ({{count}})",
+    show_less: "收起",
     tables: "表",
     relationships: "关系",
     subject_areas: "主题区域",

@@ -76,33 +76,55 @@ export default function WorkSpace() {
   };
 
   const save = useCallback(async () => {
+    console.log("[DEBUG] save() called. window.name:", window.name);
     const name = window.name.split(" ");
     const op = name[0];
-    const saveAsDiagram = window.name === "" || op === "d" || op === "lt";
+    // Allow "drawdb" as a valid diagram save operation (Wujie environment)
+    const saveAsDiagram = window.name === "" || op === "d" || op === "lt" || op === "drawdb";
+    console.log("[DEBUG] saveAsDiagram:", saveAsDiagram, "op:", op);
 
     if (saveAsDiagram) {
       if (searchParams.has("shareId")) {
         searchParams.delete("shareId");
         setSearchParams(searchParams, { replace: true });
       }
-      if ((id === 0 && window.name === "") || op === "lt") {
-        await db.diagrams
-          .add({
-            database: database,
+      // Treat id=0 with window.name="drawdb" as a new save
+      if ((id === 0 && (window.name === "" || op === "drawdb")) || op === "lt") {
+        const data = {
+          database: database,
+          name: title,
+          gistId: gistId ?? "",
+          lastModified: new Date(),
+          tables: tables,
+          references: relationships,
+          notes: notes,
+          areas: areas,
+          todos: tasks,
+          pan: transform.pan,
+          zoom: transform.zoom,
+          loadedFromGistId: loadedFromGistId,
+          ...(databases[database].hasEnums && { enums: enums }),
+          ...(databases[database].hasTypes && { types: types }),
+        };
+        
+        // Save to Backend
+        console.log("Saving to backend (new)...");
+        fetch("http://127.0.0.1:5031/api/diagram", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
             name: title,
-            gistId: gistId ?? "",
-            lastModified: new Date(),
-            tables: tables,
-            references: relationships,
-            notes: notes,
-            areas: areas,
-            todos: tasks,
-            pan: transform.pan,
-            zoom: transform.zoom,
-            loadedFromGistId: loadedFromGistId,
-            ...(databases[database].hasEnums && { enums: enums }),
-            ...(databases[database].hasTypes && { types: types }),
+            jsonData: JSON.stringify(data)
           })
+        })
+        .then(res => {
+            if(res.ok) console.log("Backend save success");
+            else console.error("Backend save failed", res.status);
+        })
+        .catch(e => console.error("Backend save failed", e));
+
+        await db.diagrams
+          .add(data)
           .then((id) => {
             setId(id);
             window.name = `d ${id}`;
@@ -110,29 +132,48 @@ export default function WorkSpace() {
             setLastSaved(new Date().toLocaleString());
           });
       } else {
-        await db.diagrams
-          .update(id, {
-            database: database,
+        const data = {
+          database: database,
+          name: title,
+          lastModified: new Date(),
+          tables: tables,
+          references: relationships,
+          notes: notes,
+          areas: areas,
+          todos: tasks,
+          gistId: gistId ?? "",
+          pan: transform.pan,
+          zoom: transform.zoom,
+          loadedFromGistId: loadedFromGistId,
+          ...(databases[database].hasEnums && { enums: enums }),
+          ...(databases[database].hasTypes && { types: types }),
+        };
+
+        // Save to Backend
+        console.log("Saving to backend (update)...");
+        fetch("http://127.0.0.1:5031/api/diagram", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
             name: title,
-            lastModified: new Date(),
-            tables: tables,
-            references: relationships,
-            notes: notes,
-            areas: areas,
-            todos: tasks,
-            gistId: gistId ?? "",
-            pan: transform.pan,
-            zoom: transform.zoom,
-            loadedFromGistId: loadedFromGistId,
-            ...(databases[database].hasEnums && { enums: enums }),
-            ...(databases[database].hasTypes && { types: types }),
+            jsonData: JSON.stringify(data)
           })
+        })
+        .then(res => {
+            if(res.ok) console.log("Backend save success");
+            else console.error("Backend save failed", res.status);
+        })
+        .catch(e => console.error("Backend save failed", e));
+
+        await db.diagrams
+          .update(id, data)
           .then(() => {
             setSaveState(State.SAVED);
             setLastSaved(new Date().toLocaleString());
           });
       }
     } else {
+      console.log("[DEBUG] Saving as template (else block reached)");
       await db.templates
         .update(id, {
           database: database,
@@ -176,6 +217,76 @@ export default function WorkSpace() {
 
   const load = useCallback(async () => {
     const loadLatestDiagram = async () => {
+      let loadedFromBackend = false;
+      try {
+        console.log("[DEBUG] Loading from backend...");
+        const response = await fetch("http://127.0.0.1:5031/api/diagram");
+        console.log("[DEBUG] Backend response status:", response.status);
+        if (response.ok) {
+          const diagramEntity = await response.json();
+          console.log("[DEBUG] Loaded diagram from backend:", diagramEntity.name);
+          const d = JSON.parse(diagramEntity.jsonData);
+          console.log("[DEBUG] Parsed JSON data:", d);
+          if (d) {
+            if (d.database) {
+              setDatabase(d.database);
+            } else {
+              setDatabase(DB.GENERIC);
+            }
+            
+            setTitle(d.name ?? "Untitled Diagram");
+            setTables(d.tables ?? []);
+            setRelationships(d.references ?? []);
+            setNotes(d.notes ?? []);
+            setAreas(d.areas ?? []);
+            setTasks(d.todos ?? []);
+            setTransform({ pan: d.pan ?? { x: 0, y: 0 }, zoom: d.zoom ?? 1 });
+            
+            // IMPORTANT: Check database type before accessing databases[d.database]
+            // If d.database is valid, use it. Otherwise fallback or be careful.
+            const dbConfig = databases[d.database];
+            if (dbConfig && dbConfig.hasTypes) {
+              if (d.types) {
+                setTypes(
+                  d.types.map((t) =>
+                    t.id
+                      ? t
+                      : {
+                          ...t,
+                          id: nanoid(),
+                          fields: t.fields.map((f) =>
+                            f.id ? f : { ...f, id: nanoid() },
+                          ),
+                        },
+                  ),
+                );
+              } else {
+                setTypes([]);
+              }
+            }
+            if (dbConfig && dbConfig.hasEnums) {
+              setEnums(
+                d.enums?.map((e) => (!e.id ? { ...e, id: nanoid() } : e)) ?? [],
+              );
+            }
+            
+            // Force window.name to be compatible with our save logic
+            // We don't have a local ID, so we can use 0 or keep it empty but ensure 'drawdb' op is handled
+            // But wait, if we don't set window.name, the next save might be treated as 'new' (id=0)
+            // which is fine, but we want to update if possible.
+            // For now, let's just ensure it loads.
+            loadedFromBackend = true;
+            console.log("[DEBUG] Backend load successful, skipping local DB load.");
+          }
+        }
+      } catch (e) {
+        console.error("[DEBUG] Failed to load from backend", e);
+      }
+
+      if (loadedFromBackend) return;
+      
+      console.log("[DEBUG] Loading from local DB (fallback)...");
+
       await db.diagrams
         .orderBy("lastModified")
         .last()
@@ -415,12 +526,16 @@ export default function WorkSpace() {
       return;
     }
 
-    if (window.name === "") {
+    console.log("[DEBUG] load() called. window.name:", window.name);
+
+    if (window.name === "" || window.name === "drawdb") {
+      console.log("[DEBUG] window.name is empty or 'drawdb', loading latest.");
       await loadLatestDiagram();
     } else {
       const name = window.name.split(" ");
       const op = name[0];
       const id = parseInt(name[1]);
+      console.log("[DEBUG] Parsing window.name. op:", op, "id:", id);
       switch (op) {
         case "d": {
           await loadDiagram(id);
@@ -432,6 +547,8 @@ export default function WorkSpace() {
           break;
         }
         default:
+          console.log("[DEBUG] Unknown op:", op, "Loading latest as fallback.");
+          await loadLatestDiagram();
           break;
       }
     }
@@ -489,6 +606,7 @@ export default function WorkSpace() {
   ]);
 
   useEffect(() => {
+    console.log("[DEBUG] Save effect triggered. saveState:", saveState, "readOnly:", layout.readOnly);
     if (layout.readOnly) return;
 
     if (saveState !== State.SAVING) return;

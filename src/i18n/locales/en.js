@@ -97,6 +97,8 @@ const en = {
     add_note: "Add note",
     add_type: "Add type",
     to_do: "To-do",
+    show_more: "Show {{count}} more",
+    show_less: "Show less",
     tables: "Tables",
     relationships: "Relationships",
     subject_areas: "Subject areas",

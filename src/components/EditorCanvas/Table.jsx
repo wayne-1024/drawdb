@@ -14,6 +14,8 @@ import {
   IconKeyStroked,
   IconLock,
   IconUnlock,
+  IconChevronDown,
+  IconChevronUp,
 } from "@douyinfe/semi-icons";
 import { Popover, Tag, Button, SideSheet } from "@douyinfe/semi-ui";
 import { useLayout, useSettings, useDiagram, useSelect } from "../../hooks";
@@ -49,7 +51,17 @@ export default function Table({
     [settings.mode],
   );
 
-  const height = getTableHeight(tableData);
+  const MAX_VISIBLE_FIELDS = 15;
+  const [expanded, setExpanded] = useState(false);
+  const shouldTruncate = tableData.fields.length > MAX_VISIBLE_FIELDS;
+  const visibleFields = (shouldTruncate && !expanded) 
+    ? tableData.fields.slice(0, MAX_VISIBLE_FIELDS) 
+    : tableData.fields;
+
+  const height = visibleFields.length * tableFieldHeight + 
+    tableHeaderHeight + 
+    tableColorStripHeight + 
+    (shouldTruncate ? 32 : 0);
 
   const isSelected = useMemo(() => {
     return (
@@ -261,7 +273,7 @@ export default function Table({
               </div>
             </div>
           </div>
-          {tableData.fields.map((e, i) => {
+          {visibleFields.map((e, i) => {
             return settings.showFieldSummary ? (
               <Popover
                 key={i}
@@ -331,6 +343,27 @@ export default function Table({
               field(e, i)
             );
           })}
+          {shouldTruncate && (
+            <div
+              className={`h-[32px] flex justify-center items-center cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700 border-t border-gray-400 ${
+                settings.mode === "light" ? "bg-zinc-100" : "bg-zinc-800"
+              }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpanded(!expanded);
+              }}
+            >
+              {expanded ? (
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <IconChevronUp /> {t("show_less", "Show less")}
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <IconChevronDown /> {t("show_more", "Show more")} ({tableData.fields.length - MAX_VISIBLE_FIELDS})
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </foreignObject>
       <SideSheet
@@ -361,7 +394,7 @@ export default function Table({
     return (
       <div
         className={`${
-          index === tableData.fields.length - 1
+          (!shouldTruncate && index === tableData.fields.length - 1)
             ? ""
             : "border-b border-gray-400"
         } group h-[36px] px-2 py-1 flex justify-between items-center gap-1 w-full overflow-hidden`}
