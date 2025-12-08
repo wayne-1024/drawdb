@@ -1933,12 +1933,21 @@ export default function ControlPanel({
             </button>
           </Tooltip>
         </div>
-        <button
-          onClick={() => invertLayout("header")}
-          className="flex items-center"
-        >
-          {layout.header ? <IconChevronUp /> : <IconChevronDown />}
-        </button>
+        <div className="flex items-center gap-2">
+          {!layout.readOnly && (
+            <Tag
+              size="small"
+              type="light"
+              prefixIcon={
+                saveState === State.LOADING || saveState === State.SAVING ? (
+                  <Spin size="small" />
+                ) : null
+              }
+            >
+              {getState()}
+            </Tag>
+          )}
+        </div>
       </div>
     );
   }
@@ -2144,20 +2153,7 @@ export default function ControlPanel({
                 ))}
               </div>
               {layout.readOnly && <Tag size="small">{t("read_only")}</Tag>}
-              {!layout.readOnly && (
-                <Tag
-                  size="small"
-                  type="light"
-                  prefixIcon={
-                    saveState === State.LOADING ||
-                    saveState === State.SAVING ? (
-                      <Spin size="small" />
-                    ) : null
-                  }
-                >
-                  {getState()}
-                </Tag>
-              )}
+
             </div>
           </div>
         </div>
