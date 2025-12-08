@@ -1739,8 +1739,12 @@ export default function ControlPanel({
   function toolbar() {
     return (
       <div
-        className="py-1.5 px-5 flex justify-between items-center rounded-xl my-1 sm:mx-1 xl:mx-6 select-none overflow-hidden toolbar-theme"
-        style={isRtl(i18n.language) ? { direction: "rtl" } : {}}
+        className="py-0.5 px-6 flex justify-between items-center rounded-2xl my-1 mx-6 select-none overflow-hidden shadow-lg transition-all duration-300"
+        style={{
+          backgroundColor: "var(--semi-color-bg-2)",
+          border: "1px solid var(--semi-color-border, rgba(var(--semi-grey-9), 0.08))",
+          ...(isRtl(i18n.language) ? { direction: "rtl" } : {})
+        }}
       >
         <div className="flex justify-start items-center">
           <LayoutDropdown />
@@ -1800,79 +1804,79 @@ export default function ControlPanel({
           </Dropdown>
           <Tooltip content={t("zoom_in")} position="bottom">
             <button
-              className="py-1 px-2 hover-2 rounded-sm text-lg"
+              className="py-1 px-2 hover-2 rounded-sm text-sm font-medium"
               onClick={() =>
                 setTransform((prev) => ({ ...prev, zoom: prev.zoom * 1.2 }))
               }
             >
-              <i className="fa-solid fa-magnifying-glass-plus" />
+              {t("zoom_in")}
             </button>
           </Tooltip>
           <Tooltip content={t("zoom_out")} position="bottom">
             <button
-              className="py-1 px-2 hover-2 rounded-sm text-lg"
+              className="py-1 px-2 hover-2 rounded-sm text-sm font-medium"
               onClick={() =>
                 setTransform((prev) => ({ ...prev, zoom: prev.zoom / 1.2 }))
               }
             >
-              <i className="fa-solid fa-magnifying-glass-minus" />
+              {t("zoom_out")}
             </button>
           </Tooltip>
           <Divider layout="vertical" margin="8px" />
           <Tooltip content={t("undo")} position="bottom">
             <button
-              className="py-1 px-2 hover-2 rounded-sm flex items-center disabled:opacity-50"
+              className="py-1 px-2 hover-2 rounded-sm flex items-center disabled:opacity-50 text-sm font-medium"
               disabled={undoStack.length === 0 || layout.readOnly}
               onClick={undo}
             >
-              <IconUndo size="large" />
+              {t("undo")}
             </button>
           </Tooltip>
           <Tooltip content={t("redo")} position="bottom">
             <button
-              className="py-1 px-2 hover-2 rounded-sm flex items-center disabled:opacity-50"
+              className="py-1 px-2 hover-2 rounded-sm flex items-center disabled:opacity-50 text-sm font-medium"
               disabled={redoStack.length === 0 || layout.readOnly}
               onClick={redo}
             >
-              <IconRedo size="large" />
+              {t("redo")}
             </button>
           </Tooltip>
           <Divider layout="vertical" margin="8px" />
           <Tooltip content={t("add_table")} position="bottom">
             <button
-              className="flex items-center py-1 px-2 hover-2 rounded-sm disabled:opacity-50"
+              className="flex items-center py-1 px-2 hover-2 rounded-sm disabled:opacity-50 text-sm font-medium"
               onClick={() => addTable()}
               disabled={layout.readOnly}
             >
-              <IconAddTable />
+              {t("add_table")}
             </button>
           </Tooltip>
           <Tooltip content={t("add_area")} position="bottom">
             <button
-              className="py-1 px-2 hover-2 rounded-sm flex items-center disabled:opacity-50"
+              className="py-1 px-2 hover-2 rounded-sm flex items-center disabled:opacity-50 text-sm font-medium"
               onClick={() => addArea()}
               disabled={layout.readOnly}
             >
-              <IconAddArea />
+              {t("add_area")}
             </button>
           </Tooltip>
           <Tooltip content={t("add_note")} position="bottom">
             <button
-              className="py-1 px-2 hover-2 rounded-sm flex items-center disabled:opacity-50"
+              className="py-1 px-2 hover-2 rounded-sm flex items-center disabled:opacity-50 text-sm font-medium"
               onClick={() => addNote()}
               disabled={layout.readOnly}
             >
-              <IconAddNote />
+              {t("add_note")}
             </button>
           </Tooltip>
           <Divider layout="vertical" margin="8px" />
           <Tooltip content={t("save")} position="bottom">
             <button
-              className="py-1 px-2 hover-2 rounded-sm flex items-center disabled:opacity-50"
+              className="py-1 px-2 hover-2 rounded-sm flex items-center disabled:opacity-50 text-sm font-medium"
               onClick={save}
               disabled={layout.readOnly}
             >
-              <IconSaveStroked size="extra-large" />
+              {t("save")}
             </button>
           </Tooltip>
           <Dropdown
@@ -1888,32 +1892,32 @@ export default function ControlPanel({
               </Dropdown.Menu>
             }
           >
-            <div className="py-1 px-2 hover-2 rounded-sm flex items-center cursor-pointer">
+            <div className="py-1 px-2 hover-2 rounded-sm flex items-center cursor-pointer text-sm font-medium">
               <Tooltip content={t("export_as")} position="bottom">
-                <i className="fa-solid fa-file-export text-xl" />
+                {t("export_as")}
               </Tooltip>
             </div>
           </Dropdown>
           <Tooltip content={t("versions")} position="bottom">
             <button
-              className="py-1 px-2 hover-2 rounded-sm text-xl -mt-0.5"
+              className="py-1 px-2 hover-2 rounded-sm text-sm font-medium -mt-0.5"
               onClick={() => setSidesheet(SIDESHEET.VERSIONS)}
             >
-              <i className="fa-solid fa-code-branch" />{" "}
+              {t("versions")}
             </button>
           </Tooltip>
           <Tooltip content={t("to_do")} position="bottom">
             <button
-              className="py-1 px-2 hover-2 rounded-sm text-xl -mt-0.5"
+              className="py-1 px-2 hover-2 rounded-sm text-sm font-medium -mt-0.5"
               onClick={() => setSidesheet(SIDESHEET.TODO)}
             >
-              <i className="fa-regular fa-calendar-check" />
+              {t("to_do")}
             </button>
           </Tooltip>
           <Divider layout="vertical" margin="8px" />
           <Tooltip content={t("theme")} position="bottom">
             <button
-              className="py-1 px-2 hover-2 rounded-sm text-xl -mt-0.5"
+              className="py-1 px-2 hover-2 rounded-sm text-sm font-medium -mt-0.5"
               onClick={() => {
                 const body = document.body;
                 if (body.hasAttribute("theme-mode")) {
@@ -1925,7 +1929,7 @@ export default function ControlPanel({
                 }
               }}
             >
-              <i className="fa-solid fa-circle-half-stroke" />
+              {t("theme")}
             </button>
           </Tooltip>
         </div>
